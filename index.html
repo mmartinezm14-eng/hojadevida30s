@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoja de Vida - Samuel Sanchez</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* ── Estilos originales de Samuel ── */
+        body {
+            background-color: orange;
+            padding: 20px;
+        }
+        .profile-img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 5px solid white;
+            margin-bottom: 20px;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        /* ── Sección de experiencias ── */
+        .exp-card {
+            border-left: 4px solid #212529;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .exp-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        }
+        .badge-tech {
+            font-size: 0.75rem;
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ccc;
+        }
+        .trabajo-actual-badge {
+            font-size: 0.75rem;
+        }
+        #loading-exp {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-4">
+
+    <!-- ── PERFIL ── -->
+    <div class="card text-center p-4 mb-4">
+        <h1>Hoja de Vida</h1>
+        <img src="samupro.jpeg" alt="Samuel Sanchez" class="profile-img mx-auto">
+        <h2>Samuel Eduardo Sanchez Silva</h2>
+        <p class="lead">Programador Junior</p>
+        <span class="badge bg-dark text-white p-2">18 años</span>
+    </div>
+
+    <!-- ── DESCRIPCIÓN + CONTACTO ── -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <div class="card p-4 h-100">
+                <h3><i class="bi bi-person-fill"></i> Descripción</h3>
+                <p>Estudiante de programación con interés en el desarrollo de software. Con conocimientos en <strong>HTML, CSS, Java, PHP y JavaScript</strong>.</p>
+                <p>Experto en manejo de bases de datos y frameworks de desarrollo.</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-4 h-100">
+                <h3>Datos de Contacto</h3>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><i class="bi bi-envelope-fill me-2"></i><strong>Correo:</strong> Comsam464@gmail.com</li>
+                    <li class="list-group-item"><i class="bi bi-telephone-fill me-2"></i><strong>Teléfono:</strong> 311 6533729</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         EXPERIENCIAS PROFESIONALES (desde el API)
+    ══════════════════════════════════════════ -->
+    <div class="card p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="mb-0"><i class="bi bi-briefcase-fill me-2"></i>Experiencias Profesionales</h3>
+            <button class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregar">
+                <i class="bi bi-plus-lg me-1"></i>Agregar
+            </button>
+        </div>
+
+        <!-- Spinner de carga -->
+        <div id="loading-exp" class="text-center py-3">
+            <div class="spinner-border spinner-border-sm text-dark me-2" role="status"></div>
+            Cargando experiencias...
+        </div>
+
+        <!-- Aquí se inyectan las tarjetas -->
+        <div id="lista-experiencias">
+            <p class="text-muted text-center" id="sin-experiencias">
+                <i class="bi bi-info-circle me-1"></i>No hay experiencias registradas aún.
+            </p>
+        </div>
+    </div>
+
+    <!-- ── FORMULARIO CONTACTO ── -->
+    <div class="card p-4 mb-4">
+        <h3><i class="bi bi-chat-dots-fill me-2"></i>Contáctame</h3>
+        <form id="contactForm">
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre Completo</label>
+                <input type="text" class="form-control" id="nombre" placeholder="Escribe tu nombre">
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Correo Electrónico</label>
+                <input type="email" class="form-control" id="email" placeholder="nombre@correo.com">
+            </div>
+            <div class="mb-3">
+                <label for="mensaje" class="form-label">Mensaje</label>
+                <textarea class="form-control" id="mensaje" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Enviar Mensaje</button>
+        </form>
+        <div id="respuesta" class="mt-3"></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL — Agregar experiencia
+══════════════════════════════════════════ -->
+<div class="modal fade" id="modalAgregar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="bi bi-briefcase me-2"></i>Nueva Experiencia</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Empresa *</label>
+                    <input type="text" class="form-control" id="f-empresa" placeholder="Ej: Tech Solutions S.A.S">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Cargo *</label>
+                    <input type="text" class="form-control" id="f-cargo" placeholder="Ej: Desarrollador Junior">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-control" id="f-descripcion" rows="3" placeholder="Funciones desempeñadas..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Tecnologías (separadas por coma)</label>
+                    <input type="text" class="form-control" id="f-tecnologias" placeholder="HTML, CSS, JavaScript">
+                </div>
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label class="form-label">Fecha de inicio *</label>
+                        <input type="date" class="form-control" id="f-fechaInicio">
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label class="form-label">Fecha de fin</label>
+                        <input type="date" class="form-control" id="f-fechaFin">
+                    </div>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="f-trabajoActual">
+                    <label class="form-check-label" for="f-trabajoActual">Trabajo actual</label>
+                </div>
+                <div id="form-error" class="alert alert-danger mt-3 d-none"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-dark" id="btn-guardar">
+                    <i class="bi bi-save me-1"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL — Editar experiencia
+══════════════════════════════════════════ -->
+<div class="modal fade" id="modalEditar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Editar Experiencia</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="e-id">
+                <div class="mb-3">
+                    <label class="form-label">Empresa *</label>
+                    <input type="text" class="form-control" id="e-empresa">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Cargo *</label>
+                    <input type="text" class="form-control" id="e-cargo">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-control" id="e-descripcion" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Tecnologías (separadas por coma)</label>
+                    <input type="text" class="form-control" id="e-tecnologias">
+                </div>
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label class="form-label">Fecha de inicio *</label>
+                        <input type="date" class="form-control" id="e-fechaInicio">
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label class="form-label">Fecha de fin</label>
+                        <input type="date" class="form-control" id="e-fechaFin">
+                    </div>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="e-trabajoActual">
+                    <label class="form-check-label" for="e-trabajoActual">Trabajo actual</label>
+                </div>
+                <div id="edit-error" class="alert alert-danger mt-3 d-none"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-dark" id="btn-actualizar">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Actualizar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+// ════════════════════════════════════════════════════════
+//  CONFIGURACIÓN
+// ════════════════════════════════════════════════════════
+const API_URL = "http://localhost:3000/api/experiencias";
+
+// ════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════
+function formatearFecha(fecha) {
+    if (!fecha) return "Presente";
+    return new Date(fecha).toLocaleDateString("es-CO", { year: "numeric", month: "short" });
+}
+
+function toInputDate(fecha) {
+    if (!fecha) return "";
+    return new Date(fecha).toISOString().split("T")[0];
+}
+
+// ════════════════════════════════════════════════════════
+//  RENDERIZAR EXPERIENCIAS
+// ════════════════════════════════════════════════════════
+function renderExperiencias(lista) {
+    const contenedor = $("#lista-experiencias");
+    contenedor.empty();
+
+    if (lista.length === 0) {
+        contenedor.html('<p class="text-muted text-center"><i class="bi bi-info-circle me-1"></i>No hay experiencias registradas aún.</p>');
+        return;
+    }
+
+    lista.forEach(exp => {
+        const tecnologias = exp.tecnologias.map(t =>
+            `<span class="badge badge-tech me-1">${t}</span>`
+        ).join("");
+
+        const badgeActual = exp.trabajoActual
+            ? `<span class="badge bg-success trabajo-actual-badge ms-2">Trabajo actual</span>`
+            : "";
+
+        const card = `
+        <div class="card exp-card p-3 mb-3" id="exp-${exp._id}">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                <div>
+                    <h5 class="mb-0 fw-bold">${exp.cargo} ${badgeActual}</h5>
+                    <p class="mb-1 text-muted"><i class="bi bi-building me-1"></i>${exp.empresa}</p>
+                    <small class="text-secondary">
+                        <i class="bi bi-calendar3 me-1"></i>
+                        ${formatearFecha(exp.fechaInicio)} — ${formatearFecha(exp.fechaFin)}
+                    </small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-dark btn-sm btn-editar" data-id="${exp._id}">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm btn-eliminar" data-id="${exp._id}">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            ${exp.descripcion ? `<p class="mt-2 mb-1 small">${exp.descripcion}</p>` : ""}
+            ${tecnologias ? `<div class="mt-2">${tecnologias}</div>` : ""}
+        </div>`;
+        contenedor.append(card);
+    });
+}
+
+// ════════════════════════════════════════════════════════
+//  GET — Cargar todas las experiencias
+// ════════════════════════════════════════════════════════
+function cargarExperiencias() {
+    $("#loading-exp").show();
+    $.get(API_URL)
+        .done(res => renderExperiencias(res.data))
+        .fail(() => {
+            $("#lista-experiencias").html('<div class="alert alert-warning">No se pudo conectar con el API. ¿Está corriendo el servidor?</div>');
+        })
+        .always(() => $("#loading-exp").hide());
+}
+
+// ════════════════════════════════════════════════════════
+//  POST — Crear experiencia
+// ════════════════════════════════════════════════════════
+$("#btn-guardar").on("click", function () {
+    const empresa    = $("#f-empresa").val().trim();
+    const cargo      = $("#f-cargo").val().trim();
+    const fechaInicio = $("#f-fechaInicio").val();
+
+    if (!empresa || !cargo || !fechaInicio) {
+        $("#form-error").removeClass("d-none").text("Empresa, cargo y fecha de inicio son obligatorios.");
+        return;
+    }
+    $("#form-error").addClass("d-none");
+
+    const body = {
+        empresa,
+        cargo,
+        descripcion:   $("#f-descripcion").val().trim(),
+        tecnologias:   $("#f-tecnologias").val().split(",").map(t => t.trim()).filter(Boolean),
+        fechaInicio,
+        fechaFin:      $("#f-fechaFin").val() || null,
+        trabajoActual: $("#f-trabajoActual").is(":checked"),
+    };
+
+    $.ajax({ url: API_URL, method: "POST", contentType: "application/json", data: JSON.stringify(body) })
+        .done(() => {
+            bootstrap.Modal.getInstance(document.getElementById("modalAgregar")).hide();
+            document.getElementById("modalAgregar").querySelectorAll("input, textarea").forEach(el => el.value = "");
+            $("#f-trabajoActual").prop("checked", false);
+            cargarExperiencias();
+        })
+        .fail(err => {
+            $("#form-error").removeClass("d-none").text("Error: " + (err.responseJSON?.error || "No se pudo guardar."));
+        });
+});
+
+// ════════════════════════════════════════════════════════
+//  GET /:id + abrir modal editar
+// ════════════════════════════════════════════════════════
+$(document).on("click", ".btn-editar", function () {
+    const id = $(this).data("id");
+    $.get(`${API_URL}/${id}`)
+        .done(res => {
+            const e = res.data;
+            $("#e-id").val(e._id);
+            $("#e-empresa").val(e.empresa);
+            $("#e-cargo").val(e.cargo);
+            $("#e-descripcion").val(e.descripcion);
+            $("#e-tecnologias").val(e.tecnologias.join(", "));
+            $("#e-fechaInicio").val(toInputDate(e.fechaInicio));
+            $("#e-fechaFin").val(toInputDate(e.fechaFin));
+            $("#e-trabajoActual").prop("checked", e.trabajoActual);
+            new bootstrap.Modal(document.getElementById("modalEditar")).show();
+        });
+});
+
+// ════════════════════════════════════════════════════════
+//  PUT — Actualizar experiencia
+// ════════════════════════════════════════════════════════
+$("#btn-actualizar").on("click", function () {
+    const id      = $("#e-id").val();
+    const empresa = $("#e-empresa").val().trim();
+    const cargo   = $("#e-cargo").val().trim();
+    const fechaInicio = $("#e-fechaInicio").val();
+
+    if (!empresa || !cargo || !fechaInicio) {
+        $("#edit-error").removeClass("d-none").text("Empresa, cargo y fecha de inicio son obligatorios.");
+        return;
+    }
+    $("#edit-error").addClass("d-none");
+
+    const body = {
+        empresa,
+        cargo,
+        descripcion:   $("#e-descripcion").val().trim(),
+        tecnologias:   $("#e-tecnologias").val().split(",").map(t => t.trim()).filter(Boolean),
+        fechaInicio,
+        fechaFin:      $("#e-fechaFin").val() || null,
+        trabajoActual: $("#e-trabajoActual").is(":checked"),
+    };
+
+    $.ajax({ url: `${API_URL}/${id}`, method: "PUT", contentType: "application/json", data: JSON.stringify(body) })
+        .done(() => {
+            bootstrap.Modal.getInstance(document.getElementById("modalEditar")).hide();
+            cargarExperiencias();
+        })
+        .fail(err => {
+            $("#edit-error").removeClass("d-none").text("Error: " + (err.responseJSON?.error || "No se pudo actualizar."));
+        });
+});
+
+// ════════════════════════════════════════════════════════
+//  DELETE — Eliminar experiencia
+// ════════════════════════════════════════════════════════
+$(document).on("click", ".btn-eliminar", function () {
+    if (!confirm("¿Seguro que deseas eliminar esta experiencia?")) return;
+    const id = $(this).data("id");
+    $.ajax({ url: `${API_URL}/${id}`, method: "DELETE" })
+        .done(() => cargarExperiencias())
+        .fail(() => alert("No se pudo eliminar."));
+});
+
+// ════════════════════════════════════════════════════════
+//  FORMULARIO DE CONTACTO (validación)
+// ════════════════════════════════════════════════════════
+$("#contactForm").on("submit", function (e) {
+    e.preventDefault();
+    const nombre  = $("#nombre").val().trim();
+    const email   = $("#email").val().trim();
+    const mensaje = $("#mensaje").val().trim();
+    const resp    = $("#respuesta");
+
+    if (!nombre || !email || !mensaje) {
+        resp.html('<div class="alert alert-danger">Por favor, llena todos los campos.</div>');
+    } else if (!email.includes("@")) {
+        resp.html('<div class="alert alert-warning">Introduce un correo válido.</div>');
+    } else {
+        resp.html('<div class="alert alert-success">¡Mensaje enviado con éxito, Samuel!</div>');
+        this.reset();
+    }
+});
+
+// ════════════════════════════════════════════════════════
+//  INICIO
+// ════════════════════════════════════════════════════════
+$(document).ready(function () {
+    $(".card").hide().fadeIn(800);
+    $("#loading-exp").show();
+    cargarExperiencias();
+});
+</script>
+
+</body>
+</html>
