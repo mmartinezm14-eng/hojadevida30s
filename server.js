@@ -13,12 +13,16 @@ const PORT = process.env.PORT || 3000;
 // ─────────────────────────────────────────────
 // MIDDLEWARES
 // ─────────────────────────────────────────────
-app.use(cors());                        // Permite peticiones desde el frontend
-app.use(express.json());                // Parsea body JSON
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "*",   // En Render agrega FRONTEND_URL = https://tu-usuario.github.io
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type"]
+}));
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ─────────────────────────────────────────────
-// SWAGGER - Documentación automática
+// SWAGGER
 // ─────────────────────────────────────────────
 const swaggerOptions = {
   definition: {
@@ -47,8 +51,8 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://localhost:${PORT}`,
-        description: "Servidor local de desarrollo",
+        url: process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`,
+        description: "Servidor activo",
       },
     ],
   },
@@ -70,37 +74,36 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 // ─────────────────────────────────────────────
 app.use("/api/experiencias", experienciasRouter);
 
-// Ruta raíz informativa
 app.get("/", (req, res) => {
   res.json({
     mensaje: "✅ API Hoja de Vida - Samuel Sanchez",
     version: "1.0.0",
-    documentacion: `http://localhost:${PORT}/api-docs`,
+    documentacion: `${process.env.RENDER_EXTERNAL_URL || "http://localhost:" + PORT}/api-docs`,
     endpoints: {
-      "GET    /api/experiencias":        "Listar todas las experiencias",
-      "GET    /api/experiencias/:id":    "Obtener una experiencia",
-      "POST   /api/experiencias":        "Crear nueva experiencia",
-      "PUT    /api/experiencias/:id":    "Actualizar experiencia",
-      "DELETE /api/experiencias/:id":    "Eliminar experiencia",
+      "GET    /api/experiencias":     "Listar todas las experiencias",
+      "GET    /api/experiencias/:id": "Obtener una experiencia",
+      "POST   /api/experiencias":     "Crear nueva experiencia",
+      "PUT    /api/experiencias/:id": "Actualizar experiencia",
+      "DELETE /api/experiencias/:id": "Eliminar experiencia",
     },
   });
 });
 
-// Ruta 404 para rutas no definidas
+// 404
 app.use((req, res) => {
   res.status(404).json({ ok: false, mensaje: `Ruta ${req.originalUrl} no encontrada` });
 });
 
 // ─────────────────────────────────────────────
-// CONEXIÓN A MONGODB + INICIO DEL SERVIDOR
+// CONEXIÓN A MONGODB + INICIO
 // ─────────────────────────────────────────────
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log("✅ Conectado a MongoDB:", process.env.MONGO_URI);
+    console.log("✅ Conectado a MongoDB");
     app.listen(PORT, () => {
-      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-      console.log(`📄 Swagger UI disponible en http://localhost:${PORT}/api-docs`);
+      console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
+      console.log(`📄 Swagger UI: /api-docs`);
     });
   })
   .catch((err) => {
